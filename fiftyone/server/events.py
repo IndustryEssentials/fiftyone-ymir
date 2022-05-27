@@ -193,10 +193,10 @@ def get_state(subscription) -> fos.StateDescription:
         the :class:`fiftyone.core.state.StateDescription` server singleton
     """
     global _state_pool
-    if _state_pool.get("subscription") is None:
-        _state_pool["subscription"] = fos.StateDescription()
+    if _state_pool.get(subscription) is None:
+        _state_pool[subscription] = fos.StateDescription()
 
-    return _state_pool["subscription"] 
+    return _state_pool[subscription]
 
 
 
