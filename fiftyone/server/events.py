@@ -36,7 +36,8 @@ _listeners: t.Dict[str, t.Set[Listener]] = defaultdict(set)
 _polling_listener: t.Optional[
     t.Tuple[str, t.Set[t.Tuple[str, Listener]]]
 ] = None
-_state: t.Optional[fos.StateDescription] = None
+# _state: t.Optional[fos.StateDescription] = None
+_state_pool = {}
 _app_count = 0
 
 
@@ -55,10 +56,12 @@ async def dispatch_event(
 
     events = []
     for listener in _listeners[event.get_event_name()]:
+        break
         if listener.subscription == subscription:
             continue
 
         events.append(listener.queue.put((datetime.now(), event)))
+
 
     await asyncio.gather(*events)
 
@@ -183,17 +186,20 @@ async def dispatch_polling_event_listener(
     }
 
 
-def get_state() -> fos.StateDescription:
+def get_state(subscription) -> fos.StateDescription:
     """Get the current state description singleton on the server
 
     Returns:
         the :class:`fiftyone.core.state.StateDescription` server singleton
     """
-    global _state
-    if _state is None:
-        _state = fos.StateDescription()
+    global _state_pool
+    if _state_pool.get("subscription") is None:
+        _state_pool["subscription"] = fos.StateDescription()
 
-    return _state
+    return _state_pool["subscription"] 
+
+
+
 
 
 async def _disconnect(
@@ -201,6 +207,8 @@ async def _disconnect(
 ) -> None:
     for event_name, listener in listeners:
         _listeners[event_name].remove(listener)
+        # remove state
+    del _state_pool[listener.subscription]
 
     if is_app:
         global _app_count
@@ -218,7 +226,7 @@ class InitializedListener:
 
 
 async def _initialize_listener(payload: ListenPayload) -> InitializedListener:
-    state = get_state()
+    state = get_state(payload.subscription)
     is_app = not isinstance(payload.initializer, fos.StateDescription)
     if is_app:
         global _app_count

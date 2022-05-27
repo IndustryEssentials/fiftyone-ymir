@@ -46,7 +46,7 @@ class Mutation:
         name: t.Optional[str],
         info: Info,
     ) -> bool:
-        state = get_state()
+        state = get_state(subscription)
         state.dataset = fo.load_dataset(name) if name is not None else None
         state.selected = []
         state.selected_labels = []
@@ -61,7 +61,7 @@ class Mutation:
         session: t.Optional[str],
         selected: t.List[str],
     ) -> bool:
-        state = get_state()
+        state = get_state(subscription)
 
         state.selected = selected
         await dispatch_event(subscription, StateUpdate(state=state))
@@ -74,7 +74,7 @@ class Mutation:
         session: t.Optional[str],
         selected_labels: t.List[SelectedLabel],
     ) -> bool:
-        state = get_state()
+        state = get_state(subscription)
 
         state.selected_labels = [asdict(l) for l in selected_labels]
         await dispatch_event(subscription, StateUpdate(state=state))
@@ -89,7 +89,7 @@ class Mutation:
         dataset: str,
         info: Info,
     ) -> ViewResponse:
-        state = get_state()
+        state = get_state(subscription)
         state.selected = []
         state.selected_labels = []
         state.view = fov.DatasetView._build(state.dataset, view)
