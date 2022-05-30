@@ -20,7 +20,7 @@ class Select(HTTPEndpoint):
         labels = data.get("labels", None)
         subscription: str = data.get("subscription")
 
-        state = fose.get_state()
+        state = fose.get_state(subscription)
 
         if ids is not None:
             state.selected = ids

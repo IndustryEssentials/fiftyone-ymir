@@ -42,7 +42,7 @@ class Pin(HTTPEndpoint):
         if similarity:
             view = view.sort_by_similarity(**similarity)
 
-        state = fose.get_state()
+        state = fose.get_state(subscription)
         state.selected = []
         state.selected_labels = []
         state.dataset = fo.load_dataset(dataset)
