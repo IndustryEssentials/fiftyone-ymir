@@ -25,6 +25,7 @@ class Sort(HTTPEndpoint):
         filters = data.get("filters", {})
         stages = data.get("view", None)
         similarity = data.get("similarity", None)
+        subscription: str = data.get("subscription")
 
         dataset = fod.load_dataset(dataset_name)
         dist_field = similarity.get("dist_field", None)
@@ -36,7 +37,7 @@ class Sort(HTTPEndpoint):
 
         fosv.get_view(dataset_name, stages, filters, similarity=similarity)
 
-        state = fose.get_state().copy()
+        state = fose.get_state(subscription).copy()
         view = fosv.get_view(dataset_name, stages, filters)
         state.dataset = view._dataset
 
