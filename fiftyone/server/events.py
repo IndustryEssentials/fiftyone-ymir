@@ -50,18 +50,17 @@ async def dispatch_event(
         subscription: the calling subscription id
         event: the event
     """
+    return
     if isinstance(event, StateUpdate):
         global _state
         _state = event.state
 
     events = []
     for listener in _listeners[event.get_event_name()]:
-        break
         if listener.subscription == subscription:
             continue
 
         events.append(listener.queue.put((datetime.now(), event)))
-
 
     await asyncio.gather(*events)
 
@@ -187,10 +186,10 @@ async def dispatch_polling_event_listener(
 
 
 def get_state(subscription) -> fos.StateDescription:
-    """Get the current state description singleton on the server
+    """Get the current subscription  state from the state pool
 
     Returns:
-        the :class:`fiftyone.core.state.StateDescription` server singleton
+        the :class:`fiftyone.core.state.StateDescription` for the subscription
     """
     global _state_pool
     if _state_pool.get(subscription) is None:
@@ -199,16 +198,14 @@ def get_state(subscription) -> fos.StateDescription:
     return _state_pool[subscription]
 
 
-
-
-
 async def _disconnect(
     is_app: bool, listeners: t.Set[t.Tuple[str, Listener]]
 ) -> None:
     for event_name, listener in listeners:
         _listeners[event_name].remove(listener)
         # remove state
-    del _state_pool[listener.subscription]
+        if _state_pool.get(listener.subscription) is not None:
+            del _state_pool[listener.subscription]
 
     if is_app:
         global _app_count
