@@ -35,12 +35,16 @@ FROM $BASE_IMAGE
 # The Python version to install
 ARG PYTHON_VERSION=3.8
 
+ARG SERVER_MODE=prod
+
 #
 # Install system packages
 #
 
-RUN  sed -i s@/archive.ubuntu.com/@/mirrors.aliyun.com/@g /etc/apt/sources.list
-RUN  apt-get clean
+RUN if [ "${SERVER_MODE}" = "dev" ]; then \
+    sed -i s@/archive.ubuntu.com/@/mirrors.aliyun.com/@g /etc/apt/sources.list \
+    && apt-get clean; \
+    fi
 
 RUN apt -y update \
     && apt -y --no-install-recommends install software-properties-common \
