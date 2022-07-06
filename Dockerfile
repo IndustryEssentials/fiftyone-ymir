@@ -35,9 +35,16 @@ FROM $BASE_IMAGE
 # The Python version to install
 ARG PYTHON_VERSION=3.8
 
+ARG SERVER_MODE=prod
+
 #
 # Install system packages
 #
+
+RUN if [ "${SERVER_MODE}" = "dev" ]; then \
+    sed -i s@/archive.ubuntu.com/@/mirrors.aliyun.com/@g /etc/apt/sources.list \
+    && apt-get clean; \
+    fi
 
 RUN apt -y update \
     && apt -y --no-install-recommends install software-properties-common \
@@ -47,26 +54,26 @@ RUN apt -y update \
     && apt -y --no-install-recommends install tzdata \
     && TZ=Etc/UTC \
     && apt -y --no-install-recommends install \
-        build-essential \
-        ca-certificates \
-        cmake \
-        cmake-data \
-        pkg-config \
-        libcurl4 \
-        libsm6 \
-        libxext6 \
-        libssl-dev \
-        libffi-dev \
-        libxml2-dev \
-        libxslt1-dev \
-        zlib1g-dev \
-        unzip \
-        curl \
-        wget \
-        python${PYTHON_VERSION} \
-        python${PYTHON_VERSION}-dev \
-        python${PYTHON_VERSION}-distutils \
-        ffmpeg \
+    build-essential \
+    ca-certificates \
+    cmake \
+    cmake-data \
+    pkg-config \
+    libcurl4 \
+    libsm6 \
+    libxext6 \
+    libssl-dev \
+    libffi-dev \
+    libxml2-dev \
+    libxslt1-dev \
+    zlib1g-dev \
+    unzip \
+    curl \
+    wget \
+    python${PYTHON_VERSION} \
+    python${PYTHON_VERSION}-dev \
+    python${PYTHON_VERSION}-distutils \
+    ffmpeg \
     && ln -s /usr/bin/python${PYTHON_VERSION} /usr/local/bin/python \
     && ln -s /usr/local/lib/python${PYTHON_VERSION} /usr/local/lib/python \
     && curl https://bootstrap.pypa.io/get-pip.py | python \
@@ -114,7 +121,5 @@ ENV FIFTYONE_DATABASE_DIR=${ROOT_DIR}/db \
 # Default behavior
 #
 
-CMD ipython
-
 # Use this if you want the default behavior to instead be to launch the App
-# CMD python /usr/local/lib/python/dist-packages/fiftyone/server/main.py --port 5151
+CMD ["python", "/usr/local/lib/python/dist-packages/fiftyone/server/main.py", "--port", "5151", "--address", "0.0.0.0"]
